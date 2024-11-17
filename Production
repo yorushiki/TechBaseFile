@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="utf-8">
+        <title>Health Care Sheet</title>
+
+        <style>
+            div{
+  margin-bottom:5px;
+}
+
+th{
+  width:100px;
+}
+        </style>
+    </head>
+
+    <body>
+     
+        <script>
+function saveCounter(baseName, index, value, maxAgeInSeconds) {
+    const key = `${baseName}_${index}`; // "counter_0" のようにキーを修正
+    const encodedValue = encodeURIComponent(value);
+    document.cookie = `${key}=${encodedValue}; path=/; max-age=${maxAgeInSeconds}`;
+    
+    // デバッグ用ログ追加
+//    console.log(`Saving cookie: ${key}=${encodedValue}; path=/; max-age=${maxAgeInSeconds}`);
+}
+
+
+// 例: カウントをクッキーに保存（1日=86400秒）
+//saveCookie("counter", 42, 86400);
+
+function getCounter(baseName, index) {
+    const key = `${baseName}_${index}`;
+    const cookieArr = document.cookie.split(';');
+    
+    // クッキーを一行ずつチェック
+ //   console.log("Checking cookies:", document.cookie);
+    for (let i = 0; i < cookieArr.length; i++) {
+        let cookie = cookieArr[i].trim();  // trim()で余分なスペースを削除
+    //    console.log("Cookie being checked:", cookie);
+        if (cookie.startsWith(`${key}=`)) {
+      //      console.log(`Found cookie: ${cookie}`);
+            return decodeURIComponent(cookie.substring(key.length + 1));
+        }
+    }
+    
+    return null;
+}
+
+    var number=0;
+            // ページロード時にクッキーからカウントを表示
+            window.onload = function() {
+                const counter = getCounter("Counter", 0);
+       
+                if(counter==null){
+                    number =0;
+                    console.log(number);
+                    return;
+                }
+                console.log("counter="+counter);
+
+                number=counter;
+                for(var i=0;i<counter;i++){
+                    insertRow('myTable',true,i);
+                    
+                }
+             //   loadCheckboxState();
+            }
+
+            function Today(){
+                var Time=new Date();
+                var year=Time.getFullYear();
+                var month=Time.getMonth()+1;
+                var day=Time.getDate();
+                
+                return year+"/"+month+"/"+day;
+               
+            }
+
+            function Dice(){
+                var dice=new Array("いつもより早く寝る","軽い運動をする","ストレッチを行う");
+
+                var Random=Math.random();
+                var Range=Random*dice.length;
+                var number=Math.floor(Range);
+ 
+                return dice[number];
+            }
+
+
+            function saveCheckboxState(checkbox,No) {
+                const key = `checkboxState_${No}`; // "counter_0" のようにキーを修正
+                const isChecked = checkbox.checked;  // チェックボックスがチェックされているかどうか
+                const encodedValue = encodeURIComponent(isChecked);  // true/falseをエンコード
+                document.cookie = `${key}=${encodedValue}; path=/; max-age=86400`;  // 1日間保存
+                console.log(No+"="+isChecked);
+            }
+
+function getCookie(name) {
+    const cookieArr = document.cookie.split(';');
+    for (let i = 0; i < cookieArr.length; i++) {
+        let cookie = cookieArr[i].trim();
+        if (cookie.startsWith(name + "=")) {
+            return cookie.substring(name.length + 1);
+        }
+    }
+    return "";
+}
+
+function loadCheckboxState(key) {
+    const cookies = document.cookie.split('; ');
+    for (const cookie of cookies) {
+        const [cookieKey, value] = cookie.split('=');
+        if (cookieKey === key) {
+            return decodeURIComponent(value) === 'true'; // クッキーの値をデコードし、boolean に変換
+        }
+    }
+    return false; // デフォルトは未チェック
+}
+
+
+
+            //http://scrap.php.xdomain.jp/javascript_table_control/
+            function insertRow(id,SaveData,max) {
+                // テーブル取得
+                var table = document.getElementById(id);
+                // 行を行末に追加
+                var row = table.insertRow(-1);
+                // セルの挿入
+                var cell1 = row.insertCell(-1);
+                var cell2 = row.insertCell(-1);
+                var cell3 = row.insertCell(-1);
+                var cell4 = row.insertCell(-1);
+                // ボタン用 HTML
+
+                var button = '<input type="button" value="行削除" onclick="deleteRow(this)" />';
+                
+                var checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+
+                
+                // 行数取得
+                var row_len = table.rows.length;
+                
+                console.log("T/F="+checkbox.checked);
+
+                if(SaveData){
+                
+
+                    //セーブデータのロード
+
+                checkbox.addEventListener('click', (function(index) {
+                    return function() {
+                        saveCheckboxState(checkbox, index); // 番号とチェックボックスを渡して状態を保存
+                    };
+                })(max)); 
+                
+
+
+                const saveDay = getCounter("Day", max); // 42
+                const saveDice = getCounter("Dice", max); // 42
+                checkbox.checked = loadCheckboxState(`checkboxState_${max}`); 
+                console.log(saveDay);
+                console.log(saveDice);
+                cell1.innerHTML = saveDay;
+                cell2.innerHTML = saveDice;
+                cell3.appendChild(checkbox); 
+                cell4.innerHTML = button;
+                
+
+                }
+                else{
+
+                    //セーブデータを保存
+                    checkbox.addEventListener('click', (function(index) {
+                    return function() {
+                        saveCheckboxState(checkbox, index); // 番号とチェックボックスを渡して状態を保存
+                    };
+                })(number)); 
+                
+
+                var resultDay=Today();
+                var resultDice=Dice();
+                loadCheckboxState(checkbox);
+
+                cell1.innerHTML = resultDay;
+                cell2.innerHTML = resultDice;
+                cell3.appendChild(checkbox); 
+                cell4.innerHTML = button;
+
+                saveCounter("Day", number, resultDay, 86400);
+                saveCounter("Dice", number, resultDice, 86400);
+                number++;
+                saveCounter("Counter", 0, number, 86400);
+
+                console.log("Counter="+number);
+                console.log(resultDay);
+                console.log(resultDice);
+
+
+                }
+            
+             
+
+            }
+ 
+            function deleteRow(obj) {
+                // 削除ボタンを押下された行を取得
+                tr = obj.parentNode.parentNode;
+                // trのインデックスを取得して行を削除する
+                tr.parentNode.deleteRow(tr.sectionRowIndex);
+                number-=1;
+                saveCounter("Counter", 0, number, 86400);
+                console.log("Counter="+number);
+            }
+        </script>
+
+        <h1>健康管理スケジュール</h1>
+
+    <div>
+      
+        <table id="myTable" border="1">
+            <tr>
+                <td nowrap>日付</td>
+                <td nowrap>目標</td>
+                <td>✓</td>
+               <td>  <input type="button" value="行追加" onclick="insertRow('myTable',false,0)" />
+               </td> 
+            </tr>
+        
+            
+        </table>
+    </div>
+ 
+    </body>
+</html>
